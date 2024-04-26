@@ -1,0 +1,12 @@
+org.opencv.test.sdk-startup-runtime-1.1.1-0 C:\Users\RY011024\.gradle\caches\transforms-3\11d69b201414a677bd33d3150b0133de\transformed\startup-runtime-1.1.1\res
+org.opencv.test.sdk-core-1.13.0-rc01-1 C:\Users\RY011024\.gradle\caches\transforms-3\1ffc2f4d22c3d06d2b6d23eca79477f4\transformed\core-1.13.0-rc01\res
+org.opencv.test.sdk-profileinstaller-1.3.0-2 C:\Users\RY011024\.gradle\caches\transforms-3\5e122c0243b33fc3069c117462b80299\transformed\profileinstaller-1.3.0\res
+org.opencv.test.sdk-annotation-experimental-1.4.0-3 C:\Users\RY011024\.gradle\caches\transforms-3\6c98657a30ce5617e6448a763f4e9280\transformed\annotation-experimental-1.4.0\res
+org.opencv.test.sdk-lifecycle-runtime-2.6.2-4 C:\Users\RY011024\.gradle\caches\transforms-3\a03c12def12bc9d6ac465a469037e10a\transformed\lifecycle-runtime-2.6.2\res
+org.opencv.test.sdk-core-ktx-1.13.0-rc01-5 C:\Users\RY011024\.gradle\caches\transforms-3\b44da7506547ac191ee22d26e2cfb752\transformed\core-ktx-1.13.0-rc01\res
+org.opencv.test.sdk-core-runtime-2.2.0-6 C:\Users\RY011024\.gradle\caches\transforms-3\e30ec84764e8baa71493b35dc39534e7\transformed\core-runtime-2.2.0\res
+org.opencv.test.sdk-androidTest-7 D:\MyApplication15\sdk\build\generated\res\resValues\androidTest\debug
+org.opencv.test.sdk-mergeDebugAndroidTestResources-8 D:\MyApplication15\sdk\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+org.opencv.test.sdk-mergeDebugAndroidTestResources-9 D:\MyApplication15\sdk\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+org.opencv.test.sdk-debugAndroidTest-10 D:\MyApplication15\sdk\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources
+org.opencv.test.sdk-debug-11 D:\MyApplication15\sdk\build\intermediates\packaged_res\debug\packageDebugResources
