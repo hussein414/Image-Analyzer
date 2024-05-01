@@ -1,4 +1,5 @@
 Image-Analyzer
+
 Hi, I'm a master's student at Haagse Hoge School Delft. 
 The goal of this project is to replace the optical caliper (shown in the photo above) made by Fidelis from the Smart Sensor System group, 
 which is part of the GEGOGE project, with smartphones and tablets. 
