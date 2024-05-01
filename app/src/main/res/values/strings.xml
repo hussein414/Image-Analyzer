@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">My Application</string>
     <string name="title_activity_main2">MainActivity2</string>
+    <string name="land">Hi im Aref. Im a master student in Haagse hoge school Delft. The goal of this project is to replace the optical caliper (shown in the photo above) made by Fidelis from the Smart Sensor System group, which is part of the GEGOGE project, with smartphones and tablets. The optical caliper is designed to measure the thickness of plant stems with an accuracy of 0.5 millimeters. Similarly, this application is created with the same objective and can real-time measure the thickness of plant stems, take pictures of them, and store the images in its memory.</string>
 </resources>
