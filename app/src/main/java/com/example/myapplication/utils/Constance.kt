@@ -11,4 +11,5 @@ object Constance {
     const val CAMERA_PERMISSION = "PERMISSION"
 
     var AVERAGE_MM_DISTANCE = ""
+    var AVERAGE_MM_DISTANCE_71 = ""
 }

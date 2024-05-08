@@ -1,5 +1,6 @@
 package com.example.myapplication.utils.analyzer;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
@@ -239,6 +240,13 @@ public class ImageAnalyzer {
         Mat binary = new Mat();
         Imgproc.adaptiveThreshold(laplacian, binary, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 11, 2);
 
+        // Draw a horizontal line in the middle of the image
+        Mat imageWithLine = binary.clone();
+        int middleY = imageWithLine.rows() / 2;
+        Imgproc.line(imageWithLine, new Point(0, middleY), new Point(imageWithLine.cols(), middleY), new Scalar(255, 0, 0), 2);
+
+        // Detect edges and draw markers
+        detectAndMarkEdges(imageWithLine, middleY);
         // Convert the binary Mat back to a Bitmap to save or further use
         Bitmap laplacianBitmap = Bitmap.createBitmap(binary.cols(), binary.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(binary, laplacianBitmap);
@@ -280,4 +288,32 @@ public class ImageAnalyzer {
     private double pixelsToMm(double pixels, double ppmm) {
         return pixels / ppmm;
     }
+
+    @SuppressLint("DefaultLocale")
+    private void detectAndMarkEdges(Mat image, int middleY) {
+        byte[] middleRow = new byte[image.cols()];
+        image.get(middleY, 0, middleRow);
+        List<Integer> edgeIndices = new ArrayList<>();
+
+        for (int i = 1; i < middleRow.length; i++) {
+            if (middleRow[i] != middleRow[i - 1]) {
+                edgeIndices.add(i);
+            }
+        }
+
+        if (edgeIndices.size() >= 2) {
+            int mostLeftEdge = edgeIndices.get(0);
+            int mostRightEdge = edgeIndices.get(edgeIndices.size() - 1);
+            Imgproc.circle(image, new Point(mostLeftEdge, middleY), 10, new Scalar(0, 255, 0), -1);  // Green for left edge
+            Imgproc.circle(image, new Point(mostRightEdge, middleY), 10, new Scalar(0, 0, 255), -1);  // Blue for right edge
+
+            double pixelDistance = mostRightEdge - mostLeftEdge;
+            double convertedUnits = pixelDistance / 71;  // Conversion factor
+
+            // Set the converted units result to a TextView
+            image.put(middleY - 20, mostLeftEdge, String.format("Distance: %.2f units", convertedUnits).getBytes());
+        }
+    }
+
+
 }

@@ -6,6 +6,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -30,15 +32,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.ui.view.component.CameraPreview
 import com.example.myapplication.ui.view.component.PhotoBottomSheetContent
+import com.example.myapplication.ui.view.component.Ring
 import com.example.myapplication.ui.viewmodel.CameraTakeViewModel
 import com.example.myapplication.utils.Constance
 import com.example.myapplication.utils.Constance.CAMERAX_PERMISSIONS
+import com.example.myapplication.utils.common.MyHighlightIndication
 import com.example.myapplication.utils.common.hasRequiredPermissions
 import com.example.myapplication.utils.common.takePhoto
 import kotlinx.coroutines.launch
@@ -60,6 +65,8 @@ fun CameraScreen() {
     }
     val viewModel = viewModel<CameraTakeViewModel>()
     val bitmaps by viewModel.bitmaps.collectAsState()
+    val highlightIndication = remember { MyHighlightIndication() }
+    var interactionSource = remember { MutableInteractionSource() }
 
     val hasPermissions = remember {
         hasRequiredPermissions(context)
@@ -100,6 +107,18 @@ fun CameraScreen() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = highlightIndication,
+                    enabled = true,
+                    onClick = {
+                        takePhoto(
+                            controller = controller,
+                            onPhotoTaken = viewModel::onTakePhoto,
+                            context = context
+                        )
+                    }
+                )
         ) {
             CameraPreview(
                 controller = controller,
@@ -123,6 +142,14 @@ fun CameraScreen() {
                 )
             }
 
+            Ring(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.Center),
+                diameter = 50.dp,
+                color = Color.White
+            )
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -139,7 +166,8 @@ fun CameraScreen() {
                 ) {
                     Icon(
                         imageVector = Icons.Default.Photo,
-                        contentDescription = "Open gallery"
+                        contentDescription = "Open gallery",
+                        tint = Color.White
                     )
                 }
                 IconButton(
@@ -153,7 +181,9 @@ fun CameraScreen() {
                 ) {
                     Icon(
                         imageVector = Icons.Default.PhotoCamera,
-                        contentDescription = "Take photo"
+                        contentDescription = "Take photo",
+                        tint = Color.White
+
                     )
                 }
             }

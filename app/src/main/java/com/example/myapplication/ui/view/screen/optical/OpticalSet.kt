@@ -45,6 +45,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.ui.view.navigation.Screen
 import com.example.myapplication.utils.Constance
+import com.example.myapplication.utils.analyzer.analyzerImage
 import com.example.myapplication.utils.analyzer.processImage
 
 @Composable
@@ -60,8 +61,8 @@ fun OpticalSet(navController: NavController) {
             selectedImages = uri
             uri?.let {
                 val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
-                processImage(bitmap)
-                processedImageBitmap = processImage(bitmap)
+                analyzerImage(bitmap)
+                processedImageBitmap = analyzerImage(bitmap)
             }
         }
     )
