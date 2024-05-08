@@ -1,7 +1,7 @@
 package com.example.myapplication.ui.view.screen.optical
 
 
-import android.graphics.Bitmap
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -43,26 +43,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.data.model.ResultProcess
 import com.example.myapplication.ui.view.navigation.Screen
-import com.example.myapplication.utils.Constance
-import com.example.myapplication.utils.analyzer.analyzerImage
 import com.example.myapplication.utils.analyzer.processImage
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun OpticalSet(navController: NavController) {
     var selectedImages by remember {
         mutableStateOf<Uri?>(null)
     }
     val context = LocalContext.current
-    var processedImageBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var processedImageBitmap by remember { mutableStateOf<ResultProcess?>(null) }
     val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri: Uri? ->
             selectedImages = uri
             uri?.let {
                 val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
-                analyzerImage(bitmap)
-                processedImageBitmap = analyzerImage(bitmap)
+                processImage(bitmap)
+                processedImageBitmap = processImage(bitmap)
             }
         }
     )
@@ -114,7 +114,7 @@ fun OpticalSet(navController: NavController) {
         Column(modifier = Modifier.fillMaxSize()) {
             processedImageBitmap?.let {
                 Image(
-                    bitmap = it.asImageBitmap(),
+                    bitmap = it.croppedImage.asImageBitmap(),
                     contentDescription = "Processed Image",
                     modifier = Modifier
                         .height(600.dp)
@@ -125,12 +125,15 @@ fun OpticalSet(navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            val averageMmDistanceStr = String.format("%.2f", processedImageBitmap?.convertedUnits)+"MM"
             Text(
-                text = Constance.AVERAGE_MM_DISTANCE,
+                text = averageMmDistanceStr,
                 color = Color.Black,
                 fontSize = 15.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.weight(1f).fillMaxWidth()
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.weight(1f))
