@@ -2,8 +2,10 @@ package com.example.myapplication.ui.view.screen.optical
 
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,21 +41,18 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.data.model.ResultProcess
 import com.example.myapplication.ui.view.navigation.Screen
 import com.example.myapplication.utils.analyzer.processImage
 
-@SuppressLint("DefaultLocale")
+@Suppress("DEPRECATION")
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter", "DefaultLocale")
 @Composable
-fun OpticalSet(navController: NavController) {
-    var selectedImages by remember {
-        mutableStateOf<Uri?>(null)
-    }
+fun OpticalSet(navController: NavController, bitmapUri: String?) {
+    var selectedImages by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
     var processedImageBitmap by remember { mutableStateOf<ResultProcess?>(null) }
     val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
@@ -61,12 +61,25 @@ fun OpticalSet(navController: NavController) {
             selectedImages = uri
             uri?.let {
                 val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
-                processImage(bitmap)
                 processedImageBitmap = processImage(bitmap)
             }
         }
     )
 
+    val averageMmDistanceStr = String.format("%.2f", processedImageBitmap?.convertedUnits ?: 0.0) + "mm"
+
+    LaunchedEffect(bitmapUri) {
+        bitmapUri?.let {
+            try {
+                val bitmap = context.contentResolver.openInputStream(Uri.parse(it))?.use { inputStream ->
+                    BitmapFactory.decodeStream(inputStream)
+                }
+                processedImageBitmap = bitmap?.let { it1 -> processImage(it1) }
+            } catch (e: Exception) {
+                Log.e("OpticalSet", "Failed to load bitmap: ${e.message}")
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -125,7 +138,6 @@ fun OpticalSet(navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            val averageMmDistanceStr = String.format("%.2f", processedImageBitmap?.convertedUnits)+"MM"
             Text(
                 text = averageMmDistanceStr,
                 color = Color.Black,
@@ -176,9 +188,4 @@ fun OpticalSet(navController: NavController) {
     }
 }
 
-@Preview
-@Composable
-private fun Test() {
-    val navController = rememberNavController()
-    OpticalSet(navController = navController)
-}
+

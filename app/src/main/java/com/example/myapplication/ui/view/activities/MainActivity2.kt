@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.view.navigation.Screen
 import com.example.myapplication.ui.view.screen.camera.CameraScreen
@@ -42,14 +44,21 @@ class MainActivity2 : ComponentActivity() {
                         composable(Screen.OpticalLand.route) {
                             OpticalLand(navController = navController)
                         }
-                        composable(Screen.OpticalSet.route) {
-                            OpticalSet(navController=navController)
+                        composable(
+                            route = Screen.OpticalSet.route,
+                            arguments = listOf(navArgument("bitmapUri") {
+                                type = NavType.StringType
+                                nullable = true
+                            })
+                        ) { backStackEntry ->
+                            val bitmapUri = backStackEntry.arguments?.getString("bitmapUri")
+                            OpticalSet(navController = navController, bitmapUri = bitmapUri)
                         }
                         composable(Screen.OpticalInfo.route) {
                             OpticalInfo(navController=navController)
                         }
                         composable(Screen.Camera.route) {
-                            CameraScreen()
+                            CameraScreen(navController = navController)
                         }
                     }
                 }

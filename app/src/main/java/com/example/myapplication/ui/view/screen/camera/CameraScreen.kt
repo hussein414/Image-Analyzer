@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.view.screen.camera
 
 
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -37,21 +38,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.myapplication.ui.view.component.CameraPreview
 import com.example.myapplication.ui.view.component.PhotoBottomSheetContent
 import com.example.myapplication.ui.view.component.Ring
+import com.example.myapplication.ui.view.navigation.Screen
 import com.example.myapplication.ui.viewmodel.CameraTakeViewModel
 import com.example.myapplication.utils.Constance
 import com.example.myapplication.utils.Constance.CAMERAX_PERMISSIONS
 import com.example.myapplication.utils.common.MyHighlightIndication
 import com.example.myapplication.utils.common.hasRequiredPermissions
+import com.example.myapplication.utils.common.saveBitmapToCache
 import com.example.myapplication.utils.common.takePhoto
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showSystemUi = true)
 @Composable
-fun CameraScreen() {
+fun CameraScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
     val context = LocalContext.current
@@ -64,9 +67,9 @@ fun CameraScreen() {
         }
     }
     val viewModel = viewModel<CameraTakeViewModel>()
-    val bitmaps by viewModel.bitmaps.collectAsState()
+    val bitmaps by viewModel.bitmap.collectAsState()
     val highlightIndication = remember { MyHighlightIndication() }
-    var interactionSource = remember { MutableInteractionSource() }
+    val interactionSource = remember { MutableInteractionSource() }
 
     val hasPermissions = remember {
         hasRequiredPermissions(context)
@@ -79,7 +82,13 @@ fun CameraScreen() {
             if (cameraPermissionGranted) {
                 takePhoto(
                     controller = controller,
-                    onPhotoTaken = viewModel::onTakePhoto,
+                    onPhotoTaken = { bitmap ->
+                        viewModel.onTakePhoto(bitmap)
+                        val bitmapUri = saveBitmapToCache(context, bitmap).toString()
+                        navController.navigate(Screen.OpticalSet.createRoute(bitmapUri)) {
+                            popUpTo(Screen.Camera.route) { inclusive = true }
+                        }
+                    },
                     context = context
                 )
             }
@@ -91,15 +100,12 @@ fun CameraScreen() {
         }
     }
 
-
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetPeekHeight = 0.dp,
         sheetContent = {
             PhotoBottomSheetContent(
-                bitmaps = bitmaps,
-                modifier = Modifier
-                    .fillMaxWidth()
+                bitmap = bitmaps,
             )
         }
     ) { padding ->
@@ -114,7 +120,13 @@ fun CameraScreen() {
                     onClick = {
                         takePhoto(
                             controller = controller,
-                            onPhotoTaken = viewModel::onTakePhoto,
+                            onPhotoTaken = { bitmap ->
+                                viewModel.onTakePhoto(bitmap)
+                                val bitmapUri = saveBitmapToCache(context, bitmap).toString()
+                                navController.navigate(Screen.OpticalSet.createRoute(bitmapUri)) {
+                                    popUpTo(Screen.Camera.route) { inclusive = true }
+                                }
+                            },
                             context = context
                         )
                     }
@@ -122,8 +134,7 @@ fun CameraScreen() {
         ) {
             CameraPreview(
                 controller = controller,
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             )
 
             IconButton(
@@ -133,8 +144,7 @@ fun CameraScreen() {
                             CameraSelector.DEFAULT_FRONT_CAMERA
                         } else CameraSelector.DEFAULT_BACK_CAMERA
                 },
-                modifier = Modifier
-                    .offset(16.dp, 16.dp)
+                modifier = Modifier.offset(16.dp, 16.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Cameraswitch,
@@ -174,7 +184,13 @@ fun CameraScreen() {
                     onClick = {
                         takePhoto(
                             controller = controller,
-                            onPhotoTaken = viewModel::onTakePhoto,
+                            onPhotoTaken = { bitmap ->
+                                viewModel.onTakePhoto(bitmap)
+                                val bitmapUri = saveBitmapToCache(context, bitmap).toString()
+                                navController.navigate(Screen.OpticalSet.createRoute(bitmapUri)) {
+                                    popUpTo(Screen.Camera.route) { inclusive = true }
+                                }
+                            },
                             context = context
                         )
                     }
@@ -183,11 +199,11 @@ fun CameraScreen() {
                         imageVector = Icons.Default.PhotoCamera,
                         contentDescription = "Take photo",
                         tint = Color.White
-
                     )
                 }
             }
         }
     }
 }
+
 

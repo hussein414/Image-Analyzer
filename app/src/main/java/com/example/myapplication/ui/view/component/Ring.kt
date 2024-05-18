@@ -37,7 +37,7 @@ fun Ring(
 
 fun DrawScope.drawRing(
     color: Color,
-    diameter: Dp = 100.dp,
+    diameter: Dp = 50.dp,
     @FloatRange(from = 0.0, 1.0)
     ringFraction: Float = .1f,
     offset: Offset = Offset.Zero
