@@ -94,7 +94,7 @@ fun processImage(originalBitmap: Bitmap): ResultProcess {
     var convertedUnits: Double? = null
     if (mostLeftEdge != -1 && mostRightEdge != -1) {
         val pixelDistance = mostRightEdge - mostLeftEdge
-        convertedUnits = pixelDistance / 71.0
+        convertedUnits = pixelDistance / 14.7
     }
 
     val imageWithLine = Mat()
