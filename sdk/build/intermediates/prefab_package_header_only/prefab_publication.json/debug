@@ -1,5 +1,5 @@
 {
-  "installationFolder": "D:\\MyApplication15\\sdk\\build\\intermediates\\prefab_package\\debug\\prefab",
+  "installationFolder": "/Users/aref/AndroidStudioProjects/Image-Analyzer/sdk/build/intermediates/prefab_package/debug/prefab",
   "gradlePath": ":sdk",
   "packageInfo": {
     "packageName": "sdk",
@@ -8,7 +8,7 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-        "moduleHeaders": "D:\\MyApplication15\\sdk\\native\\jni\\include",
+        "moduleHeaders": "/Users/aref/AndroidStudioProjects/Image-Analyzer/sdk/native/jni/include",
         "moduleExportLibraries": [],
         "abis": []
       }

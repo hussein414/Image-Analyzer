@@ -48,6 +48,7 @@ import androidx.navigation.NavController
 import com.example.myapplication.data.model.ResultProcess
 import com.example.myapplication.ui.view.navigation.Screen
 import com.example.myapplication.utils.analyzer.processImage
+import com.example.myapplication.utils.common.getCorrectlyOrientedBitmap
 import com.example.myapplication.utils.common.saveImageToGallery
 
 @Suppress("DEPRECATION")
@@ -62,7 +63,8 @@ fun OpticalSet(navController: NavController, bitmapUri: String?) {
         onResult = { uri: Uri? ->
             selectedImages = uri
             uri?.let {
-                val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
+                var bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
+                bitmap = getCorrectlyOrientedBitmap(context, it)
                 processedImageBitmap = processImage(bitmap)
                 saveImageToGallery(context, processedImageBitmap!!.croppedImage)
                 Toast.makeText(context, "Image saved to gallery", Toast.LENGTH_SHORT).show()
@@ -76,10 +78,11 @@ fun OpticalSet(navController: NavController, bitmapUri: String?) {
     LaunchedEffect(bitmapUri) {
         bitmapUri?.let {
             try {
-                val bitmap =
+                var bitmap =
                     context.contentResolver.openInputStream(Uri.parse(it))?.use { inputStream ->
                         BitmapFactory.decodeStream(inputStream)
                     }
+                bitmap = getCorrectlyOrientedBitmap(context, Uri.parse(it))
                 processedImageBitmap = bitmap?.let { it1 -> processImage(it1) }
                 saveImageToGallery(context, processedImageBitmap!!.croppedImage)
                 Toast.makeText(context, "Image saved to gallery", Toast.LENGTH_SHORT).show()

@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.media.ExifInterface
 import android.media.MediaPlayer
@@ -32,8 +33,10 @@ fun takePhoto(
             override fun onCaptureSuccess(image: ImageProxy) {
                 super.onCaptureSuccess(image)
                 val bitmap = image.toBitmap()
-                onPhotoTaken(bitmap)
+                val correctedBitmap = correctImageOrientation(bitmap, image)
+                onPhotoTaken(correctedBitmap)
                 playShutterSound(context)
+                image.close()
 
             }
 
@@ -86,5 +89,38 @@ private fun playShutterSound(context: Context) {
     mp.start()
     mp.setOnCompletionListener { mp.release() }
 }
+private fun correctImageOrientation(bitmap: Bitmap, image: ImageProxy): Bitmap {
+    val matrix = Matrix()
 
+    // Adjust the orientation based on the image's rotation degrees
+    when (image.imageInfo.rotationDegrees) {
+        90 -> matrix.postRotate(90f)
+        180 -> matrix.postRotate(180f)
+        270 -> matrix.postRotate(270f)
+    }
 
+    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+}
+
+private fun ImageProxy.toBitmap(): Bitmap {
+    val buffer = planes[0].buffer
+    buffer.rewind()
+    val bytes = ByteArray(buffer.capacity())
+    buffer.get(bytes)
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, null)
+}
+fun getCorrectlyOrientedBitmap(context: Context, imageUri: Uri): Bitmap? {
+    val inputStream = context.contentResolver.openInputStream(imageUri)
+    val exif = inputStream?.let { ExifInterface(it) }
+    val orientation = exif?.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+    val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
+
+    val matrix = Matrix()
+    when (orientation) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+        ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+        ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+    }
+
+    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+}
