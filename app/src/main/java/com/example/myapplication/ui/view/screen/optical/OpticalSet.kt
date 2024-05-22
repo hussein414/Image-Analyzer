@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -47,6 +48,7 @@ import androidx.navigation.NavController
 import com.example.myapplication.data.model.ResultProcess
 import com.example.myapplication.ui.view.navigation.Screen
 import com.example.myapplication.utils.analyzer.processImage
+import com.example.myapplication.utils.common.saveImageToGallery
 
 @Suppress("DEPRECATION")
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter", "DefaultLocale")
@@ -62,19 +64,25 @@ fun OpticalSet(navController: NavController, bitmapUri: String?) {
             uri?.let {
                 val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
                 processedImageBitmap = processImage(bitmap)
+                saveImageToGallery(context, processedImageBitmap!!.croppedImage)
+                Toast.makeText(context, "Image saved to gallery", Toast.LENGTH_SHORT).show()
             }
         }
     )
 
-    val averageMmDistanceStr = String.format("%.2f", processedImageBitmap?.convertedUnits ?: 0.0) + "mm"
+    val averageMmDistanceStr =
+        String.format("%.2f", processedImageBitmap?.convertedUnits ?: 0.0) + "mm"
 
     LaunchedEffect(bitmapUri) {
         bitmapUri?.let {
             try {
-                val bitmap = context.contentResolver.openInputStream(Uri.parse(it))?.use { inputStream ->
-                    BitmapFactory.decodeStream(inputStream)
-                }
+                val bitmap =
+                    context.contentResolver.openInputStream(Uri.parse(it))?.use { inputStream ->
+                        BitmapFactory.decodeStream(inputStream)
+                    }
                 processedImageBitmap = bitmap?.let { it1 -> processImage(it1) }
+                saveImageToGallery(context, processedImageBitmap!!.croppedImage)
+                Toast.makeText(context, "Image saved to gallery", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Log.e("OpticalSet", "Failed to load bitmap: ${e.message}")
             }
