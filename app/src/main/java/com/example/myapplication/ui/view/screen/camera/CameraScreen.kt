@@ -1,11 +1,12 @@
 package com.example.myapplication.ui.view.screen.camera
 
-
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.Photo
@@ -25,11 +27,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,7 +53,10 @@ import com.example.myapplication.utils.common.MyHighlightIndication
 import com.example.myapplication.utils.common.hasRequiredPermissions
 import com.example.myapplication.utils.common.saveBitmapToCache
 import com.example.myapplication.utils.common.takePhoto
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+private const val TAG = "CameraScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,33 +76,31 @@ fun CameraScreen(navController: NavController) {
     val bitmaps by viewModel.bitmap.collectAsState()
     val highlightIndication = remember { MyHighlightIndication() }
     val interactionSource = remember { MutableInteractionSource() }
+    var showFlash by remember { mutableStateOf(false) }
 
     val hasPermissions = remember {
         hasRequiredPermissions(context)
     }
 
     val requestPermissionsLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions())
-        { permissions ->
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             val cameraPermissionGranted = permissions[Constance.CAMERA_PERMISSION] ?: false
             if (cameraPermissionGranted) {
-                takePhoto(
-                    controller = controller,
-                    onPhotoTaken = { bitmap ->
-                        viewModel.onTakePhoto(bitmap)
-                        val bitmapUri = saveBitmapToCache(context, bitmap).toString()
-                        navController.navigate(Screen.OpticalSet.createRoute(bitmapUri)) {
-                            popUpTo(Screen.Camera.route) { inclusive = true }
-                        }
-                    },
-                    context = context
-                )
+                enableTorch(controller)
             }
         }
 
     LaunchedEffect(hasPermissions) {
         if (!hasPermissions) {
             requestPermissionsLauncher.launch(CAMERAX_PERMISSIONS)
+        } else {
+            enableTorch(controller)
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            disableTorch(controller)
         }
     }
 
@@ -102,9 +108,7 @@ fun CameraScreen(navController: NavController) {
         scaffoldState = scaffoldState,
         sheetPeekHeight = 0.dp,
         sheetContent = {
-            PhotoBottomSheetContent(
-                bitmap = bitmaps,
-            )
+            PhotoBottomSheetContent(bitmap = bitmaps)
         }
     ) { padding ->
         Box(
@@ -116,16 +120,21 @@ fun CameraScreen(navController: NavController) {
                     indication = highlightIndication,
                     enabled = true,
                     onClick = {
+                        showFlash = true
+                        scope.launch {
+                            delay(100) // Show flash for 100ms
+                            showFlash = false
+                        }
                         takePhoto(
                             controller = controller,
-                            onPhotoTaken = { bitmap ->
-                                viewModel.onTakePhoto(bitmap)
-                                val bitmapUri = saveBitmapToCache(context, bitmap).toString()
-                                navController.navigate(Screen.OpticalSet.createRoute(bitmapUri)) {
+                            onPhotoTaken = { imageUri ->
+                                navController.navigate(Screen.OpticalSet.createRoute(imageUri.toString())) {
                                     popUpTo(Screen.Camera.route) { inclusive = true }
                                 }
                             },
-                            context = context
+                            context = context,
+                            enableFlash = true,
+                            calculationResult = "CR"
                         )
                     }
                 )
@@ -134,6 +143,14 @@ fun CameraScreen(navController: NavController) {
                 controller = controller,
                 modifier = Modifier.fillMaxSize()
             )
+
+            if (showFlash) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White.copy(alpha = 0.8f))
+                )
+            }
 
             IconButton(
                 onClick = {
@@ -146,7 +163,8 @@ fun CameraScreen(navController: NavController) {
             ) {
                 Icon(
                     imageVector = Icons.Default.Cameraswitch,
-                    contentDescription = "Switch camera"
+                    contentDescription = "Switch camera",
+                    modifier = Modifier.size(48.dp)
                 )
             }
 
@@ -154,7 +172,7 @@ fun CameraScreen(navController: NavController) {
                 modifier = Modifier
                     .padding(8.dp)
                     .align(Alignment.Center),
-                diameter = 50.dp,
+                diameter = 20.dp,
                 color = Color.White
             )
 
@@ -165,38 +183,51 @@ fun CameraScreen(navController: NavController) {
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                IconButton(
-                    onClick = {
-                        scope.launch {
-                            scaffoldState.bottomSheetState.expand()
+                Box(
+                    modifier = Modifier
+                        .background(Color.Gray.copy(alpha = 0.5f))
+                        .padding(8.dp)
+                        .clickable {
+                            scope.launch {
+                                scaffoldState.bottomSheetState.expand()
+                            }
                         }
-                    }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Photo,
                         contentDescription = "Open gallery",
-                        tint = Color.White
+                        tint = Color.White,
+                        modifier = Modifier.size(48.dp)
                     )
                 }
-                IconButton(
-                    onClick = {
-                        takePhoto(
-                            controller = controller,
-                            onPhotoTaken = { bitmap ->
-                                viewModel.onTakePhoto(bitmap)
-                                val bitmapUri = saveBitmapToCache(context, bitmap).toString()
-                                navController.navigate(Screen.OpticalSet.createRoute(bitmapUri)) {
-                                    popUpTo(Screen.Camera.route) { inclusive = true }
-                                }
-                            },
-                            context = context
-                        )
-                    }
+                Box(
+                    modifier = Modifier
+                        .background(Color.Gray.copy(alpha = 0.5f))
+                        .padding(8.dp)
+                        .clickable {
+                            showFlash = true
+                            scope.launch {
+                                delay(100) // Show flash for 100ms
+                                showFlash = false
+                            }
+                            takePhoto(
+                                controller = controller,
+                                onPhotoTaken = { imageUri ->
+                                    navController.navigate(Screen.OpticalSet.createRoute(imageUri.toString())) {
+                                        popUpTo(Screen.Camera.route) { inclusive = true }
+                                    }
+                                },
+                                context = context,
+                                enableFlash = true,
+                                calculationResult = ""
+                            )
+                        }
                 ) {
                     Icon(
                         imageVector = Icons.Default.PhotoCamera,
                         contentDescription = "Take photo",
-                        tint = Color.White
+                        tint = Color.White,
+                        modifier = Modifier.size(48.dp)
                     )
                 }
             }
@@ -204,4 +235,22 @@ fun CameraScreen(navController: NavController) {
     }
 }
 
+private fun enableTorch(controller: LifecycleCameraController) {
+    val cameraControl = controller.cameraControl
+    if (cameraControl != null) {
+        Log.d(TAG, "Enabling torch")
+        cameraControl.enableTorch(true)
+    } else {
+        Log.e(TAG, "Camera control is null, cannot enable torch")
+    }
+}
 
+private fun disableTorch(controller: LifecycleCameraController) {
+    val cameraControl = controller.cameraControl
+    if (cameraControl != null) {
+        Log.d(TAG, "Disabling torch")
+        cameraControl.enableTorch(false)
+    } else {
+        Log.e(TAG, "Camera control is null, cannot disable torch")
+    }
+}

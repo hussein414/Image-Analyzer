@@ -1,6 +1,5 @@
 package com.example.myapplication.ui.view.screen.optical
 
-
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -66,7 +65,7 @@ fun OpticalSet(navController: NavController, bitmapUri: String?) {
                 var bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
                 bitmap = getCorrectlyOrientedBitmap(context, it)
                 processedImageBitmap = processImage(bitmap)
-                saveImageToGallery(context, processedImageBitmap!!.croppedImage)
+                saveImageToGallery(context, processedImageBitmap!!.croppedImage, "Calculation Result: ${processedImageBitmap?.convertedUnits ?: "N/A"}")
                 Toast.makeText(context, "Image saved to gallery", Toast.LENGTH_SHORT).show()
             }
         }
@@ -84,7 +83,7 @@ fun OpticalSet(navController: NavController, bitmapUri: String?) {
                     }
                 bitmap = getCorrectlyOrientedBitmap(context, Uri.parse(it))
                 processedImageBitmap = bitmap?.let { it1 -> processImage(it1) }
-                saveImageToGallery(context, processedImageBitmap!!.croppedImage)
+                saveImageToGallery(context, processedImageBitmap!!.croppedImage, "Calculation Result: ${processedImageBitmap?.convertedUnits ?: "N/A"}")
                 Toast.makeText(context, "Image saved to gallery", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Log.e("OpticalSet", "Failed to load bitmap: ${e.message}")
@@ -198,5 +197,3 @@ fun OpticalSet(navController: NavController, bitmapUri: String?) {
         }
     }
 }
-
-

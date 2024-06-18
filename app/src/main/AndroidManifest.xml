@@ -23,6 +23,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
+
         <activity
             android:name=".ui.view.activities.MainActivity2"
             android:exported="true"
@@ -49,6 +50,7 @@
             android:exported="false">
 
         </activity>
+
     </application>
 
 </manifest>
